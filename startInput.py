@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import atexit
 
 from network.dataInput import DataInput

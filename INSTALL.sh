@@ -29,10 +29,10 @@ echo "| Installing Dependencies                                  |"
 echo "************************************************************"
 
 echo "----- Installing Python Requests -----"
-sudo apt-get install python-requests
+sudo apt-get install python3-requests
 
 echo "----- Installing Python Serial -----"
-sudo apt-get install python-serial
+sudo apt-get install python3-serial
 
 echo "************************************************************"
 echo "| Finished. Now you need to configure your collector.      |"
