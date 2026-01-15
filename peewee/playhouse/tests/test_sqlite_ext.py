@@ -595,7 +595,7 @@ class TestFTSModel(ModelTestCase):
               .select()
               .where(ModelClass.match('faith'))
               .order_by(ModelClass.docid))
-        self.assertMessages(pq, range(len(self.messages)))
+        self.assertMessages(pq, list(range(len(self.messages))))
 
         pq = (ModelClass
               .select()
@@ -1065,7 +1065,7 @@ class TestTransitiveClosureIntegration(PeeweeTestCase):
         ext_db.create_tables([Category, Closure])
 
         def build_tree(nodes, parent=None):
-            for name, subnodes in nodes.items():
+            for name, subnodes in list(nodes.items()):
                 category = Category.create(name=name, parent=parent)
                 if subnodes:
                     for subnode in subnodes:

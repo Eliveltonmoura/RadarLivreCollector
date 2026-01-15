@@ -5,10 +5,10 @@ import sys
 from getpass import getpass
 from optparse import OptionParser
 
-from peewee import *
-from peewee import print_
-from peewee import __version__ as peewee_version
-from playhouse.reflection import *
+from .peewee import *
+from .peewee import print_
+from .peewee import __version__ as peewee_version
+from .playhouse.reflection import *
 
 TEMPLATE = """from peewee import *%s
 
@@ -35,7 +35,7 @@ DATABASE_MAP = dict((value, key)
 def make_introspector(database_type, database_name, **kwargs):
     if database_type not in DATABASE_MAP:
         err('Unrecognized database, must be one of: %s' %
-            ', '.join(DATABASE_MAP.keys()))
+            ', '.join(list(DATABASE_MAP.keys())))
         sys.exit(1)
 
     schema = kwargs.pop('schema', None)
@@ -71,7 +71,7 @@ def print_models(introspector, tables=None, preserve_order=False):
                     _print_table(dest, seen, accum + [table])
 
         print_('class %s(BaseModel):' % database.model_names[table])
-        columns = database.columns[table].items()
+        columns = list(database.columns[table].items())
         if not preserve_order:
             columns = sorted(columns)
         primary_keys = database.primary_keys[table]

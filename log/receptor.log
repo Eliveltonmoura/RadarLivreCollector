@@ -474,3 +474,20 @@
 2016-12-18 15:39:56,435 - receptor - INFO - Stopping receptor...
 2016-12-18 15:39:56,624 - receptor - INFO - Uploader stoped!
 2016-12-18 15:39:59,437 - receptor - INFO - Receptor close: closed!
+2026-01-15 15:00:19,460 - receptor - INFO - Starting receptor...
+2026-01-15 15:00:19,461 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:19,461 - receptor - INFO - Uploader started!
+2026-01-15 15:00:22,478 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:25,526 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:28,568 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:31,619 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:34,677 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:37,709 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:40,746 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:43,778 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:46,830 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:49,855 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:52,881 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:55,913 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:00:58,958 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+2026-01-15 15:01:02,004 - receptor - ERROR - Receptor open: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'

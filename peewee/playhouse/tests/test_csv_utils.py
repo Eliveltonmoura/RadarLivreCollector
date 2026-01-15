@@ -3,7 +3,7 @@ import datetime
 from contextlib import contextmanager
 from datetime import date
 try:
-    from StringIO import StringIO
+    from io import StringIO
 except ImportError:
     from io import StringIO
 from textwrap import dedent

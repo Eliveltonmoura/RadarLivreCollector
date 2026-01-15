@@ -66,7 +66,7 @@ class GFKTestCase(ModelTestCase):
     }
 
     def create(self):
-        for model, foods in self.data.items():
+        for model, foods in list(self.data.items()):
             for name, tags in foods:
                 inst = model.create(name=name)
                 for tag in tags:
@@ -126,7 +126,7 @@ class GFKTestCase(ModelTestCase):
         self.create()
 
         # test instance api
-        for model, foods in self.data.items():
+        for model, foods in list(self.data.items()):
             for food, tags in foods:
                 inst = model.get(model.name == food)
                 self.assertEqual([t.tag for t in inst.tags], list(tags))

@@ -55,7 +55,7 @@ class MicroADSB():
 
     def __init__(self, device="/dev/ttyACM0", **kwargs):
         self.device = device
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
 
@@ -149,7 +149,7 @@ class MicroADSB():
         if self.__SERIAL:
             try:
                 if self.__SERIAL.is_open:
-                    self.__SERIAL.write([0xff])
+                    self.__SERIAL.write(bytes([0xff]))
                     self.__SERIAL.close()
                 self.__SERIAL = None
                 self.__BUFFER = None
@@ -203,7 +203,7 @@ class MicroADSB():
                         data = self.__SERIAL.read()
 
 
-                        self.__BUFFER += str(data)
+                        self.__BUFFER += data.decode('utf-8', errors='ignore')
 
                         while self.__running:
                             self.__BUFFER = re.sub('^(\r\n|\n\r?|\n|\r)+', '', self.__BUFFER)
@@ -241,7 +241,7 @@ class MicroADSB():
                                                             ]
                                                         )
                                             try:
-                                                self.__SERIAL.write(toWrite)
+                                                self.__SERIAL.write(toWrite.encode('utf-8'))
                                             except Exception as err:
                                                 self.__stopListening()
                                                 self.__SERIAL.close()

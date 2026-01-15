@@ -97,7 +97,7 @@ class ObjectSlice(_LookupNode):
         elif isinstance(value, int):
             parts = [value]
         else:
-            parts = map(int, value.split(':'))
+            parts = list(map(int, value.split(':')))
         return cls(node, parts)
 
     def __getitem__(self, value):

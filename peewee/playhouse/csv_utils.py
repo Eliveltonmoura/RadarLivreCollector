@@ -20,7 +20,7 @@ import os
 import re
 from contextlib import contextmanager
 try:
-    from StringIO import StringIO
+    from io import StringIO
 except ImportError:
     from io import StringIO
 
@@ -30,7 +30,7 @@ from peewee import Func
 from peewee import PY3
 
 if PY3:
-    basestring = str
+    str = str
     decode_value = False
 else:
     decode_value = True
@@ -39,7 +39,7 @@ class _CSVReader(object):
     @contextmanager
     def get_reader(self, file_or_name, **reader_kwargs):
         is_file = False
-        if isinstance(file_or_name, basestring):
+        if isinstance(file_or_name, str):
             fh = open(file_or_name, 'r')
         elif isinstance(file_or_name, StringIO):
             fh = file_or_name
@@ -157,7 +157,7 @@ class RowConverter(_CSVReader):
                           csv file.
         :returns: A list of peewee Field objects for each column in the CSV.
         """
-        transposed = zip(*rows)
+        transposed = list(zip(*rows))
         checks = self.get_checks()
         column_types = []
         for i, column in enumerate(transposed):
@@ -202,7 +202,7 @@ class Loader(_CSVReader):
         self.converter = converter
         self.reader_kwargs = reader_kwargs
 
-        if isinstance(file_or_name, basestring):
+        if isinstance(file_or_name, str):
             self.filename = file_or_name
         elif isinstance(file_or_name, StringIO):
             self.filename = 'data.csv'
@@ -251,7 +251,7 @@ class Loader(_CSVReader):
     def get_model_class(self, field_names, fields):
         if self.model:
             return self.model
-        attrs = dict(zip(field_names, fields))
+        attrs = dict(list(zip(field_names, fields)))
         if 'id' not in attrs:
             attrs['_auto_pk'] = PrimaryKeyField()
         elif isinstance(attrs['id'], IntegerField):
@@ -315,7 +315,7 @@ def dump_csv(query, file_or_name, include_header=True, close_file=True,
     """
     Create a CSV dump of a query.
     """
-    if isinstance(file_or_name, basestring):
+    if isinstance(file_or_name, str):
         fh = open(file_or_name, append and 'a' or 'w')
     else:
         fh = file_or_name

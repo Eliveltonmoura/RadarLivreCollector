@@ -60,7 +60,7 @@ class TestMetadataIntrospection(ModelTestCase):
         def assertColumns(model, col_names, nullable, pks):
             columns = get_columns(model)
             self.assertEqual(sorted(columns), col_names)
-            for column, metadata in columns.items():
+            for column, metadata in list(columns.items()):
                 self.assertEqual(metadata.null, column in nullable)
                 self.assertEqual(metadata.table, model._meta.db_table)
                 self.assertEqual(metadata.primary_key, column in pks)

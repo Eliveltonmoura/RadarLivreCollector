@@ -68,7 +68,7 @@ except ImportError:
 
 
 if sys.version_info[0] == 3:
-    basestring = str
+    str = str
 
 FTS_MATCHINFO_FORMAT = 'pcnalx'
 FTS_MATCHINFO_FORMAT_SIMPLE = 'pcx'
@@ -254,7 +254,7 @@ class BaseFTSModel(VirtualModel):
         if tokenize:
             # Tokenizers need to be in quoted string.
             options['tokenize'] = '"%s"' % tokenize
-        if isinstance(content, basestring) and content == '':
+        if isinstance(content, str) and content == '':
             # Special-case content-less full-text search tables.
             options['content'] = "''"
         return options
@@ -478,7 +478,7 @@ class FTS5Model(BaseFTSModel):
         # Perform FTS5-specific validation and options post-processing.
         if cls._meta.primary_key.name != 'rowid':
             raise ImproperlyConfigured(cls._error_messages['pk'])
-        for field in cls._meta.fields.values():
+        for field in list(cls._meta.fields.values()):
             if not isinstance(field, (SearchField, RowIDField)):
                 raise ImproperlyConfigured(cls._error_messages['field_type'])
         if cls._meta.indexes:
@@ -606,7 +606,7 @@ class FTS5Model(BaseFTSModel):
         tbl = cls.as_entity()
         columns = [tbl]
         values = [cmd]
-        for key, value in extra_params.items():
+        for key, value in list(extra_params.items()):
             columns.append(Entity(key))
             values.append(value)
 
@@ -675,7 +675,7 @@ class FTS5Model(BaseFTSModel):
 def ClosureTable(model_class, foreign_key=None):
     """Model factory for the transitive closure extension."""
     if foreign_key is None:
-        for field_obj in model_class._meta.rel.values():
+        for field_obj in list(model_class._meta.rel.values()):
             if field_obj.rel_model is model_class:
                 foreign_key = field_obj
                 break
@@ -867,15 +867,15 @@ class SqliteExtDatabase(SqliteDatabase):
             self._load_extensions(conn)
 
     def _load_aggregates(self, conn):
-        for name, (klass, num_params) in self._aggregates.items():
+        for name, (klass, num_params) in list(self._aggregates.items()):
             conn.create_aggregate(name, num_params, klass)
 
     def _load_collations(self, conn):
-        for name, fn in self._collations.items():
+        for name, fn in list(self._collations.items()):
             conn.create_collation(name, fn)
 
     def _load_functions(self, conn):
-        for name, (fn, num_params) in self._functions.items():
+        for name, (fn, num_params) in list(self._functions.items()):
             conn.create_function(name, num_params, fn)
 
     def _load_extensions(self, conn):
@@ -1025,7 +1025,7 @@ def bm25(raw_match_info, *args):
     B = 0.75
     score = 0.0
 
-    P_O, C_O, N_O, A_O = range(4)
+    P_O, C_O, N_O, A_O = list(range(4))
     term_count = match_info[P_O]
     col_count = match_info[C_O]
     total_docs = match_info[N_O]

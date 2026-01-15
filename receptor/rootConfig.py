@@ -30,6 +30,6 @@ try:
         try:
             globals()[attr] = getattr(config, attr)
         except Exception as err:
-            print "Erro:", err
+            print(("Erro:", err))
 except:
     pass

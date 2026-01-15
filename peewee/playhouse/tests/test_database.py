@@ -3,7 +3,7 @@
 import sys
 import threading
 try:
-    from Queue import Queue
+    from queue import Queue
 except ImportError:
     from queue import Queue
 

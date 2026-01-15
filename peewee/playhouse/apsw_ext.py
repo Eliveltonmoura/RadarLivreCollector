@@ -74,23 +74,23 @@ class APSWDatabase(SqliteExtDatabase):
         self._load_modules(conn)  # APSW-only.
 
     def _load_modules(self, conn):
-        for mod_name, mod_inst in self._modules.items():
+        for mod_name, mod_inst in list(self._modules.items()):
             conn.createmodule(mod_name, mod_inst)
         return conn
 
     def _load_aggregates(self, conn):
-        for name, (klass, num_params) in self._aggregates.items():
+        for name, (klass, num_params) in list(self._aggregates.items()):
             def make_aggregate():
                 instance = klass()
                 return (instance, instance.step, instance.finalize)
             conn.createaggregatefunction(name, make_aggregate)
 
     def _load_collations(self, conn):
-        for name, fn in self._collations.items():
+        for name, fn in list(self._collations.items()):
             conn.createcollation(name, fn)
 
     def _load_functions(self, conn):
-        for name, (fn, num_params) in self._functions.items():
+        for name, (fn, num_params) in list(self._functions.items()):
             conn.createscalarfunction(name, fn, num_params)
 
     def _load_extensions(self, conn):

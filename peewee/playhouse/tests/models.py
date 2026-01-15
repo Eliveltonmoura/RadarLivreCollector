@@ -382,10 +382,10 @@ class UInt32Field(Field):
     db_field = 'int'
 
     def db_value(self, value):
-        return long(value - (1 << 31))
+        return int(value - (1 << 31))
 
     def python_value(self, value):
-        return long(value + (1 << 31))
+        return int(value + (1 << 31))
 
 class UIntModel(TestModel):
     data = UInt32Field()

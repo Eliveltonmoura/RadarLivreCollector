@@ -405,7 +405,7 @@ class TestQueryResultWrapper(ModelTestCase):
         uq = User.select().order_by(User.id)
 
         with self.assertQueryCount(1):
-            for i in reversed(range(10)):
+            for i in reversed(list(range(10))):
                 assertUser(uq, i)
 
         # Execute the query and get reference to result wrapper.
@@ -1900,7 +1900,7 @@ class TestPrefetchNonPKFK(ModelTestCase):
 
     def setUp(self):
         super(TestPrefetchNonPKFK, self).setUp()
-        for barcode, titles in self.data.items():
+        for barcode, titles in list(self.data.items()):
             Package.create(barcode=barcode)
             for title in titles:
                 PackageItem.create(package=barcode, title=title)

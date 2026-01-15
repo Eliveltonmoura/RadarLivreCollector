@@ -156,7 +156,7 @@ class Metadata(object):
                 column_types[pk] = PrimaryKeyField
 
         columns = OrderedDict()
-        for name, column_data in metadata.items():
+        for name, column_data in list(metadata.items()):
             columns[name] = Column(
                 name,
                 field_class=column_types[name],
@@ -470,7 +470,7 @@ class Introspector(object):
             lower_col_names = set(column_name.lower()
                                   for column_name in table_columns)
 
-            for col_name, column in table_columns.items():
+            for col_name, column in list(table_columns.items()):
                 new_name = self.make_column_name(col_name)
 
                 # If we have two columns, "parent" and "parent_id", ensure
@@ -554,7 +554,7 @@ class Introspector(object):
 
             primary_keys = []
             columns = database.columns[table]
-            for db_column, column in columns.items():
+            for db_column, column in list(columns.items()):
                 if column.primary_key:
                     primary_keys.append(column.name)
 
@@ -567,15 +567,15 @@ class Introspector(object):
             # Fix models with multi-column primary keys.
             composite_key = False
             if len(primary_keys) == 0:
-                primary_keys = columns.keys()
+                primary_keys = list(columns.keys())
             if len(primary_keys) > 1:
                 Meta.primary_key = CompositeKey(*[
-                    field.name for col, field in columns.items()
+                    field.name for col, field in list(columns.items())
                     if col in primary_keys])
                 composite_key = True
 
             attrs = {'Meta': Meta}
-            for db_column, column in columns.items():
+            for db_column, column in list(columns.items()):
                 FieldClass = column.field_class
                 if FieldClass is UnknownField:
                     FieldClass = BareField

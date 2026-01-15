@@ -135,7 +135,7 @@ class AsyncServerSocket(Thread):
         return len(self.__clients)
 
     def sendBroadcast(self, msg):
-        for a, c in self.__clients.iteritems():
+        for a, c in list(self.__clients.items()):
             c.send(msg)
 
     def onClientMessage(self, msg):

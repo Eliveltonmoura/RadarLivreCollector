@@ -119,10 +119,10 @@ class KeyStore(object):
         return self.query().execute()
 
     def keys(self):
-        return map(operator.itemgetter(0), self.query(self.key))
+        return list(map(operator.itemgetter(0), self.query(self.key)))
 
     def values(self):
-        return map(operator.itemgetter(0), self.query(self.value))
+        return list(map(operator.itemgetter(0), self.query(self.value)))
 
     def items(self):
         return iter(self)

@@ -56,7 +56,7 @@ class TestTopologicalSorting(PeeweeTestCase):
 
         # property 3: parents must precede children
         def assert_precedes(X, Y):
-            lhs, rhs = map(output_ordering.index, [X, Y])
+            lhs, rhs = list(map(output_ordering.index, [X, Y]))
             self.assertTrue(lhs < rhs)
         assert_precedes(A, B)
         assert_precedes(B, C)  # if true, C follows A by transitivity

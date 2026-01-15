@@ -4,7 +4,7 @@ from decimal import Decimal
 import json
 import operator
 try:
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 import sys
@@ -16,7 +16,7 @@ from playhouse.migrate import SchemaMigrator
 from playhouse.reflection import Introspector
 
 if sys.version_info[0] == 3:
-    basestring = str
+    str = str
     from functools import reduce
 
 
@@ -175,7 +175,7 @@ class Table(object):
             unique=unique)
 
     def _guess_field_type(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return TextField
         if isinstance(value, (datetime.date, datetime.datetime)):
             return DateTimeField
@@ -217,7 +217,7 @@ class Table(object):
         if filters:
             expressions = [
                 (self.model_class._meta.fields[column] == value)
-                for column, value in filters.items()]
+                for column, value in list(filters.items())]
             query = query.where(reduce(conjunction, expressions))
         return query
 

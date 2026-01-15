@@ -158,7 +158,7 @@ class ReverseGFK(object):
                 self.model_type_field: mtv,
                 self.model_id_field: miv,
             }).where(value._where).execute()
-        elif all(map(lambda i: isinstance(i, self.model_class), value)):
+        elif all([isinstance(i, self.model_class) for i in value]):
             for obj in value:
                 setattr(obj, self.model_type_field.name, mtv)
                 setattr(obj, self.model_id_field.name, miv)

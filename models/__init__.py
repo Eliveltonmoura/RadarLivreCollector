@@ -36,7 +36,7 @@ class MessageBuffer():
     dataVelocity = []
 
     def __init__(self, **kwargs):
-        for k, v in kwargs.iteritems():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     def addRawData(self, rawData):

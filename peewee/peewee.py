@@ -33,6 +33,7 @@ from bisect import bisect_left
 from bisect import bisect_right
 from collections import deque
 from collections import namedtuple
+from functools import reduce
 try:
     from collections import OrderedDict
 except ImportError:
@@ -120,12 +121,12 @@ PY3 = sys.version_info[0] == 3
 PY26 = sys.version_info[:2] == (2, 6)
 if PY3:
     import builtins
-    from collections import Callable
+    from collections.abc import Callable
     from functools import reduce
     callable = lambda c: isinstance(c, Callable)
     unicode_type = str
     string_type = bytes
-    basestring = str
+    str = str
     print_ = getattr(builtins, 'print')
     binary_construct = lambda s: bytes(s.encode('raw_unicode_escape'))
     long = int
@@ -134,8 +135,8 @@ if PY3:
             raise value.with_traceback(tb)
         raise value
 elif PY2:
-    unicode_type = unicode
-    string_type = basestring
+    unicode_type = str
+    string_type = str
     binary_construct = buffer
     def print_(s):
         sys.stdout.write(s)
@@ -182,9 +183,9 @@ except ImportError:
         mysql = None
 
 try:
-    from playhouse._speedups import format_date_time
-    from playhouse._speedups import sort_models_topologically
-    from playhouse._speedups import strip_parens
+    from .playhouse._speedups import format_date_time
+    from .playhouse._speedups import sort_models_topologically
+    from .playhouse._speedups import strip_parens
 except ImportError:
     def format_date_time(value, formats, post_process=None):
         post_process = post_process or (lambda x: x)
@@ -203,7 +204,7 @@ except ImportError:
         def dfs(model):
             if model in models and model not in seen:
                 seen.add(model)
-                for foreign_key in model._meta.reverse_rel.values():
+                for foreign_key in list(model._meta.reverse_rel.values()):
                     dfs(foreign_key.model_class)
                 ordering.append(model)  # parent will follow descendants
         # Order models by name and table initially to guarantee total ordering.
@@ -247,10 +248,10 @@ except ImportError:
         return s
 
 try:
-    from playhouse._speedups import _DictQueryResultWrapper
-    from playhouse._speedups import _ModelQueryResultWrapper
-    from playhouse._speedups import _SortedFieldList
-    from playhouse._speedups import _TuplesQueryResultWrapper
+    from .playhouse._speedups import _DictQueryResultWrapper
+    from .playhouse._speedups import _ModelQueryResultWrapper
+    from .playhouse._speedups import _SortedFieldList
+    from .playhouse._speedups import _TuplesQueryResultWrapper
 except ImportError:
     _DictQueryResultWrapper = _ModelQueryResultWrapper = _SortedFieldList =\
             _TuplesQueryResultWrapper = None
@@ -616,7 +617,7 @@ class Entity(Node):
         return Entity(*self.path)
 
     def __getattr__(self, attr):
-        return Entity(*filter(None, self.path + (attr,)))
+        return Entity(*[_f for _f in self.path + (attr,) if _f])
 
 class Func(Node):
     """An arbitrary SQL function call."""
@@ -1126,7 +1127,7 @@ class BlobField(Field):
     def db_value(self, value):
         if isinstance(value, unicode_type):
             value = value.encode('raw_unicode_escape')
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return self._constructor(value)
         return value
 
@@ -1172,7 +1173,7 @@ class DateTimeField(_BaseFormattedField):
     ]
 
     def python_value(self, value):
-        if value and isinstance(value, basestring):
+        if value and isinstance(value, str):
             return format_date_time(value, self.formats)
         return value
 
@@ -1192,7 +1193,7 @@ class DateField(_BaseFormattedField):
     ]
 
     def python_value(self, value):
-        if value and isinstance(value, basestring):
+        if value and isinstance(value, str):
             pp = lambda x: x.date()
             return format_date_time(value, self.formats, pp)
         elif value and isinstance(value, datetime.datetime):
@@ -1215,7 +1216,7 @@ class TimeField(_BaseFormattedField):
 
     def python_value(self, value):
         if value:
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 pp = lambda x: x.time()
                 return format_date_time(value, self.formats, pp)
             elif isinstance(value, datetime.datetime):
@@ -1273,7 +1274,7 @@ class TimestampField(IntegerField):
         return int(round(timestamp))
 
     def python_value(self, value):
-        if value is not None and isinstance(value, (int, float, long)):
+        if value is not None and isinstance(value, (int, float)):
             if self.resolution > 1:
                 value, microseconds = divmod(value, self.resolution)
                 return self._conv(value).replace(microsecond=microseconds)
@@ -1533,7 +1534,7 @@ class AliasMap(object):
 
     def update(self, alias_map):
         if alias_map:
-            for obj, alias in alias_map._alias_map.items():
+            for obj, alias in list(alias_map._alias_map.items()):
                 if obj not in self:
                     self._alias_map[obj] = alias
         return self
@@ -1636,7 +1637,7 @@ class QueryCompiler(object):
         return self._op_map[q]
 
     def _sorted_fields(self, field_dict):
-        return sorted(field_dict.items(), key=lambda i: i[0]._sort_key)
+        return sorted(list(field_dict.items()), key=lambda i: i[0]._sort_key)
 
     def _parse_default(self, node, alias_map, conv):
         return self.interpolation, [node]
@@ -1811,7 +1812,7 @@ class QueryCompiler(object):
             new_map._counter = alias_map._counter
 
         new_map.add(query.model_class, query.model_class._meta.table_alias)
-        for src_model, joined_models in query._joins.items():
+        for src_model, joined_models in list(query._joins.items()):
             new_map.add(src_model, src_model._meta.table_alias)
             for join_obj in joined_models:
                 if isinstance(join_obj.dest, Node):
@@ -2001,7 +2002,7 @@ class QueryCompiler(object):
             for row_dict in query._iter_rows():
                 if not have_fields:
                     fields = sorted(
-                        row_dict.keys(), key=operator.attrgetter('_sort_key'))
+                        list(row_dict.keys()), key=operator.attrgetter('_sort_key'))
                     have_fields = True
 
                 values = []
@@ -2180,7 +2181,7 @@ class ResultIterator(object):
         self.qrw = qrw
         self._idx = 0
 
-    def next(self):
+    def __next__(self):
         if self._idx < self.qrw._ct:
             obj = self.qrw._result_cache[self._idx]
         elif not self.qrw._populated:
@@ -2250,7 +2251,7 @@ class QueryResultWrapper(object):
         while True:
             yield self.iterate()
 
-    def next(self):
+    def __next__(self):
         if self._idx < self._ct:
             inst = self._result_cache[self._idx]
             self._idx += 1
@@ -2540,7 +2541,7 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
 
     def read_model_data(self, row):
         models = {}
-        for model_class, column_data in self.columns_to_compare.items():
+        for model_class, column_data in list(self.columns_to_compare.items()):
             models[model_class] = []
             for idx, col_name in column_data:
                 models[model_class].append(row[idx])
@@ -2571,7 +2572,7 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
         identity_map = {}
         _constructed = self.construct_instances(row)
         primary_instance = _constructed[self.model]
-        for model_or_alias, instance in _constructed.items():
+        for model_or_alias, instance in list(_constructed.items()):
             identity_map[model_or_alias] = OrderedDict()
             identity_map[model_or_alias][_get_pk(instance)] = instance
 
@@ -2583,7 +2584,7 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
 
             duplicate_models = set()
             cur_row_data = self.read_model_data(cur_row)
-            for model_class, data in cur_row_data.items():
+            for model_class, data in list(cur_row_data.items()):
                 if model_data[model_class] == data:
                     duplicate_models.add(model_class)
 
@@ -2594,11 +2595,11 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
             different_models = self.all_models - duplicate_models
 
             new_instances = self.construct_instances(cur_row, different_models)
-            for model_or_alias, instance in new_instances.items():
+            for model_or_alias, instance in list(new_instances.items()):
                 # Do not include any instances which are comprised solely of
                 # NULL values.
                 all_none = True
-                for value in instance._data.values():
+                for value in list(instance._data.values()):
                     if value is not None:
                         all_none = False
                 if not all_none:
@@ -2618,13 +2619,13 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
                     continue
 
                 if metadata.is_backref or metadata.is_self_join:
-                    for instance in identity_map[current].values():
+                    for instance in list(identity_map[current].values()):
                         setattr(instance, attr, [])
 
                     if join.dest not in identity_map:
                         continue
 
-                    for pk, inst in identity_map[join.dest].items():
+                    for pk, inst in list(identity_map[join.dest].items()):
                         if pk is None:
                             continue
                         try:
@@ -2640,7 +2641,7 @@ class AggregateQueryResultWrapper(ModelQueryResultWrapper):
                     if join.dest not in identity_map:
                         continue
 
-                    for pk, instance in identity_map[current].items():
+                    for pk, instance in list(identity_map[current].items()):
                         # XXX: if no FK exists, unable to join.
                         joined_inst = identity_map[join.dest][
                             instance._data[metadata.foreign_key.name]]
@@ -2691,7 +2692,7 @@ class Query(Node):
 
     def _clone_joins(self):
         return dict(
-            (mc, list(j)) for mc, j in self._joins.items())
+            (mc, list(j)) for mc, j in list(self._joins.items()))
 
     def _add_query_clauses(self, initial, expressions, conjunction=None):
         reduced = reduce(operator.and_, expressions)
@@ -2731,7 +2732,7 @@ class Query(Node):
                 (isclass(dest) and not src._meta.rel_exists(dest)))
             if require_join_condition:
                 raise ValueError('A join condition must be specified.')
-        elif isinstance(on, basestring):
+        elif isinstance(on, str):
             on = src._meta.fields[on]
         self._joins.setdefault(src, [])
         self._joins[src].append(Join(src, dest, join_type, on))
@@ -3440,7 +3441,7 @@ class InsertQuery(_WriteQuery):
                     return clean_data[0]
                 return self.database.last_insert_id(cursor, self.model_class)
             elif self._return_id_list:
-                return map(operator.itemgetter(0), cursor.fetchall())
+                return list(map(operator.itemgetter(0), cursor.fetchall()))
             else:
                 return True
 
@@ -3764,7 +3765,7 @@ class Database(object):
             raise ValueError('Fields passed to "create_index" must be a list '
                              'or tuple: "%s"' % fields)
         fobjs = [
-            model_class._meta.fields[f] if isinstance(f, basestring) else f
+            model_class._meta.fields[f] if isinstance(f, str) else f
             for f in fields]
         return self.execute_sql(*qc.create_index(model_class, fobjs, unique))
 
@@ -3774,7 +3775,7 @@ class Database(object):
             raise ValueError('Fields passed to "drop_index" must be a list '
                              'or tuple: "%s"' % fields)
         fobjs = [
-            model_class._meta.fields[f] if isinstance(f, basestring) else f
+            model_class._meta.fields[f] if isinstance(f, str) else f
             for f in fields]
         return self.execute_sql(*qc.drop_index(model_class, fobjs, safe))
 
@@ -4484,7 +4485,7 @@ class ModelOptions(object):
         self.rel = {}
         self.reverse_rel = {}
 
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             setattr(self, key, value)
         self._additional_keys = set(kwargs.keys())
 
@@ -4604,10 +4605,10 @@ class ModelOptions(object):
             if model in models:
                 continue
             models.append(model)
-            for fk in model._meta.rel.values():
+            for fk in list(model._meta.rel.values()):
                 stack.append(fk.rel_model)
             if backrefs:
-                for fk in model._meta.reverse_rel.values():
+                for fk in list(model._meta.reverse_rel.values()):
                     stack.append(fk.model_class)
         return models
 
@@ -4624,7 +4625,7 @@ class BaseModel(type):
         meta_options = {}
         meta = attrs.pop('Meta', None)
         if meta:
-            for k, v in meta.__dict__.items():
+            for k, v in list(meta.__dict__.items()):
                 if not k.startswith('_'):
                     meta_options[k] = v
 
@@ -4642,11 +4643,11 @@ class BaseModel(type):
             if parent_pk is None:
                 parent_pk = deepcopy(base_meta.primary_key)
             all_inheritable = cls.inheritable | base_meta._additional_keys
-            for (k, v) in base_meta.__dict__.items():
+            for (k, v) in list(base_meta.__dict__.items()):
                 if k in all_inheritable and k not in meta_options:
                     meta_options[k] = v
 
-            for (k, v) in b.__dict__.items():
+            for (k, v) in list(b.__dict__.items()):
                 if k in attrs:
                     continue
                 if isinstance(v, FieldDescriptor):
@@ -4665,7 +4666,7 @@ class BaseModel(type):
 
         # replace fields with field descriptors, calling the add_to_class hook
         fields = []
-        for name, attr in cls.__dict__.items():
+        for name, attr in list(cls.__dict__.items()):
             if isinstance(attr, Field):
                 if attr.primary_key and model_pk:
                     raise ValueError('primary key is overdetermined.')
@@ -4722,7 +4723,7 @@ class Model(with_metaclass(BaseModel)):
         self._dirty = set()
         self._obj_cache = {}
 
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
 
     @classmethod
@@ -4784,7 +4785,7 @@ class Model(with_metaclass(BaseModel)):
     def get_or_create(cls, **kwargs):
         defaults = kwargs.pop('defaults', {})
         query = cls.select()
-        for field, value in kwargs.items():
+        for field, value in list(kwargs.items()):
             if '__' in field:
                 query = query.filter(**{field: value})
             else:
@@ -4794,7 +4795,7 @@ class Model(with_metaclass(BaseModel)):
             return query.get(), False
         except cls.DoesNotExist:
             try:
-                params = dict((k, v) for k, v in kwargs.items()
+                params = dict((k, v) for k, v in list(kwargs.items())
                               if '__' not in k)
                 params.update(defaults)
                 with cls._meta.database.atomic():
@@ -4812,7 +4813,7 @@ class Model(with_metaclass(BaseModel)):
                 return cls.create(**kwargs), True
         except IntegrityError:
             query = []  # TODO: multi-column unique constraints.
-            for field_name, value in kwargs.items():
+            for field_name, value in list(kwargs.items()):
                 field = getattr(cls, field_name)
                 if field.unique or field.primary_key:
                     query.append(field == value)
@@ -4999,7 +5000,7 @@ class Model(with_metaclass(BaseModel)):
             if klass in seen:
                 continue
             seen.add(klass)
-            for rel_name, fk in klass._meta.reverse_rel.items():
+            for rel_name, fk in list(klass._meta.reverse_rel.items()):
                 rel_model = fk.model_class
                 if fk.rel_model is model_class:
                     node = (fk == self._data[fk.to_field.name])
@@ -5050,7 +5051,7 @@ def prefetch_add_subquery(sq, subqueries):
             subquery = subquery.select()
         subquery_model = subquery.model_class
         fks = backrefs = None
-        for j in reversed(range(i + 1)):
+        for j in reversed(list(range(i + 1))):
             prefetch_result = fixed_queries[j]
             last_query = prefetch_result.query
             last_model = prefetch_result.model

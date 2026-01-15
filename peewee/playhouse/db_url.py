@@ -1,5 +1,5 @@
 try:
-    from urlparse import urlparse, parse_qsl
+    from urllib.parse import urlparse, parse_qsl
 except ImportError:
     from urllib.parse import urlparse, parse_qsl
 

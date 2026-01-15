@@ -189,17 +189,17 @@ class TestHStoreField(BasePostgresqlExtTestCase):
     def test_hstore_selecting(self):
         self.create()
 
-        sq = Testing.select(Testing.name, Testing.data.keys().alias('keys'))
+        sq = Testing.select(Testing.name, list(Testing.data.keys()).alias('keys'))
         self.assertEqual([(x.name, sorted(x.keys)) for x in sq], [
             ('t1', ['k1', 'k2']), ('t2', ['k2', 'k3'])
         ])
 
-        sq = Testing.select(Testing.name, Testing.data.values().alias('vals'))
+        sq = Testing.select(Testing.name, list(Testing.data.values()).alias('vals'))
         self.assertEqual([(x.name, sorted(x.vals)) for x in sq], [
             ('t1', ['v1', 'v2']), ('t2', ['v2', 'v3'])
         ])
 
-        sq = Testing.select(Testing.name, Testing.data.items().alias('mtx'))
+        sq = Testing.select(Testing.name, list(Testing.data.items()).alias('mtx'))
         self.assertEqual([(x.name, sorted(x.mtx)) for x in sq], [
             ('t1', [['k1', 'v1'], ['k2', 'v2']]),
             ('t2', [['k2', 'v2'], ['k3', 'v3']]),

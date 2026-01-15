@@ -67,7 +67,7 @@ class TestManyToManyField(ModelTestCase):
         self.assertFalse(user_field.null)
 
     def _create_relationship(self):
-        for username, notes in self.user_to_note.items():
+        for username, notes in list(self.user_to_note.items()):
             user = User.get(User.username == username)
             for note in notes:
                 NoteUserThrough.create(

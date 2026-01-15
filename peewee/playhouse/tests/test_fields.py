@@ -59,7 +59,7 @@ class TestFieldTypes(ModelTestCase):
             _dt(2010, 1, 2, 13, 37, 1, 123456),
             _dt(2010, 1, 3, 13, 37, 1, 123456)),
     }
-    value_table = list(zip(*[(k,) + v for k, v in field_data.items()]))
+    value_table = list(zip(*[(k,) + v for k, v in list(field_data.items())]))
 
     def setUp(self):
         super(TestFieldTypes, self).setUp()
@@ -84,7 +84,7 @@ class TestFieldTypes(ModelTestCase):
         self.assertNM(q, ['nm2', 'nm3'])
 
     def test_field_types(self):
-        for field, values in self.field_data.items():
+        for field, values in list(self.field_data.items()):
             field_obj = getattr(NullModel, field)
             self.assertNM(field_obj < values[2], ['c1', 'c2'])
             self.assertNM(field_obj <= values[1], ['c1', 'c2'])

@@ -1,5 +1,5 @@
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 import re
@@ -9,10 +9,10 @@ PY2 = sys.version_info[0] == 2
 
 # Conditional standard library imports.
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
     if sys.version_info[0] == 2:
-        from StringIO import StringIO
+        from io import StringIO
     else:
         from io import StringIO
 

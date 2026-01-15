@@ -135,7 +135,7 @@ def model_to_dict(model, recurse=True, backrefs=False, only=None,
                 data[attr_name] = attr
 
     if backrefs and recurse:
-        for related_name, foreign_key in model._meta.reverse_rel.items():
+        for related_name, foreign_key in list(model._meta.reverse_rel.items()):
             descriptor = getattr(model_class, related_name)
             if descriptor in exclude or foreign_key in exclude:
                 continue
@@ -166,7 +166,7 @@ def model_to_dict(model, recurse=True, backrefs=False, only=None,
 def dict_to_model(model_class, data, ignore_unknown=False):
     instance = model_class()
     meta = model_class._meta
-    for key, value in data.items():
+    for key, value in list(data.items()):
         if key in meta.fields:
             field = meta.fields[key]
             is_backref = False

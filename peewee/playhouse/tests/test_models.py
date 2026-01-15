@@ -1029,7 +1029,7 @@ class TestModelAPIs(ModelTestCase):
         self.assertEqual(u2_db.username, ustr)
 
     def test_unicode_issue202(self):
-        ustr = ulit('M\u00f6rk')
+        ustr = ulit('M\\u00f6rk')
         user = User.create(username=ustr)
         self.assertEqual(user.username, ustr)
 
@@ -1481,7 +1481,7 @@ class TestManyToMany(ModelTestCase):
             User.create(username=u)
         for c in categories:
             Category.create(name=c)
-        for user, categories in user_to_cat.items():
+        for user, categories in list(user_to_cat.items()):
             user = User.get(User.username == user)
             for category in categories:
                 UserCategory.create(

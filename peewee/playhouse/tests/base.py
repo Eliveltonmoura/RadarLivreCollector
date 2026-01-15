@@ -62,7 +62,7 @@ class DatabaseInitializer(object):
             'sqlite': ('sqlite3', 'pysqlite'),
             'berkeleydb': ('bdb', 'berkeley'),
         }
-        for key, alias_list in mapping.items():
+        for key, alias_list in list(mapping.items()):
             for db_alias in alias_list:
                 if backend == db_alias:
                     return key

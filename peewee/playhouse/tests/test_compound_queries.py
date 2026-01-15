@@ -212,7 +212,7 @@ class TestCompoundSelectQueries(ModelTestCase):
 
     def setUp(self):
         super(TestCompoundSelectQueries, self).setUp()
-        for field, values in self.test_values.items():
+        for field, values in list(self.test_values.items()):
             for value in values:
                 field.model_class.create(**{field.name: value})
 
@@ -238,7 +238,7 @@ class TestCompoundSelectQueries(ModelTestCase):
             UniqueModel: UniqueModel.name,
             OrderedModel: OrderedModel.title,
         }
-        for key in itertools.permutations(fields.keys(), 2):
+        for key in itertools.permutations(list(fields.keys()), 2):
             if key in expected:
                 left, right = key
                 query = op(left.select(fields[left]).order_by(),
