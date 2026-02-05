@@ -20,7 +20,7 @@ class RawData():
         self.downlinkformat = raw["downlinkformat"]
         self.frame = raw["frame"]
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         return self.timestamp.__cmp__(other.timestamp)
 
     def __repr__(self):
@@ -61,10 +61,10 @@ class MessageBuffer():
 
 
     def _checkDataAge(self):
-        for i in range(0, len(self.dataPositionEven)):
-            if self.dataPositionEven[i].timestamp < systemTimestamp() - MAX_MESSAGE_AGE:
-                del self.dataPositionEven[i]
-                i -= 1
+        limit = systemTimestamp() - MAX_MESSAGE_AGE
+        self.dataPositionEven = [x for x in self.dataPositionEven if x.timestamp >= limit]
+        self.dataPositionOdd = [x for x in self.dataPositionOdd if x.timestamp >= limit]
+        self.dataVelocity = [x for x in self.dataVelocity if x.timestamp >= limit]
 
         for i in range(0, len(self.dataPositionOdd)):
             if self.dataPositionOdd[i].timestamp < systemTimestamp() - MAX_MESSAGE_AGE:
@@ -139,10 +139,10 @@ class ADSBInfo(Model):
                     horizontalVelocity=velocity[0],
                     groundTrackHeading=velocity[1],
                     verticalVelocity=velocity[2],
-                    messagDataId=messageBuffer.dataId[0].frame[1:29],
-                    messagDataPositionEven=messageBuffer.dataId[0].frame[1:29],
-                    messagDataPositionOdd=messageBuffer.dataId[0].frame[1:29],
-                    messagDataVelocity=messageBuffer.dataId[0].frame[1:29],
+                    messageDataId=messageBuffer.dataId[0].frame[1:29],
+                    messageDataPositionEven=messageBuffer.dataPositionEven[0].frame[1:29],
+                    messageDataPositionOdd=messageBuffer.dataPositionOdd[0].frame[1:29],
+                    messageDataVelocity=messageBuffer.dataVelocity[0].frame[1:29],
                     timestamp=int(systemTimestamp() * 1000),
                     timestampSent=int(systemTimestamp() * 1000)
                 )
