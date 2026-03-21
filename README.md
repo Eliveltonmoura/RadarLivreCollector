@@ -1,149 +1,145 @@
-# RadarLivre
+# 📡 RadarLivre Collector
 
-The RadarLivre system is a mixed software-hardware solution based in the ASD-B technology for monitoring the airspace. The main components are: 
+> Collector ADS-B rodando no Banana Pi M4 Berry com RTL-SDR
 
-* ADS-B receptor
-* Software for interpreting the collected data
-* Web server that receives the data and store them in a database
-* Software for analising the collected information and detecting possible collision between the airplanes and geographical accidents
-* Website that presents the data publicly.
+---
 
-## Getting Started
+## ℹ️ Informações
 
-This paper will help you get a copy of the project(client-side) to run it with your ADS-B receptor. If you are looking for the server-side, [this is the repository](https://github.com/RadarLivre/RadarLivreCollector).
-You need both to get the system running, so it is recomended that, if you plan on running in your local machine, install the server first.
+| Item | Valor |
+|------|-------|
+| Dispositivo | Banana Pi M4 Berry — Armbian 24.8.2 Jammy (ARM64) |
+| Receptor ADS-B | RTL2838UHIDIR (Realtek R820T) |
+| Localização | Baturité, CE (-4.3281, -38.8853) |
 
-### Prerequisites
+---
 
-This project was designed to run in ubuntu.
-You need to have these installed before installing the project.
-The other dependencies are covered when installing.
+## ⚙️ Pré-requisitos
 
-```
-* Python 2.7
-```
+- Banana Pi com Armbian/Ubuntu
+- RTL-SDR conectado via USB
+- Servidor RadarLivre rodando e acessível na rede
+- Python 3
 
-### Installing
+---
 
-Follow these steps to install, configure and run the server.
+## 📦 Instalação
 
-```
-HINT: The following commands in these boxes should be used in your terminal.
-```
-
-* Open the terminal by typing CTRL+ALT+T.
-
-* Install Git
-
-```
-sudo apt-get install git
-```
-
-* Clone this repository from github where you want to have your copy installed.
-
-```
-git clone http://github.com/RadarLivre/RadarLivreCollector.git
-```
-
-* Enter the RadarLivre collector directory
-
-```
+```bash
+git clone https://github.com/Eliveltonmoura/RadarLivreCollector.git
 cd RadarLivreCollector
+sudo bash INSTALL.sh
 ```
 
-* Run INSTALL.sh to install the dependencies.
+---
 
-```
-sudo ./INSTALL.sh
-```
+## 🔧 Configuração
 
-* From now on, you need to have a running server to send the data. If you have not installed it yet and are planning on running it locally, you need to do it now.
-Now we have to create a superuser to manage collectors inside the server. Read the "Create Superuser" section of your server's [README](https://github.com/RadarLivre/RadarLivre/blob/master/README.md).
+Edite o arquivo `config.py`:
 
-* Now, you need to add a collector. Read the "Insert new Collector" section of your server's [README](https://github.com/RadarLivre/RadarLivre/blob/master/README.md).
-
-* Run CONFIGURE.sh and follow the instructions to configure your collector.
-
-```
-sudo ./CONFIGURE.sh
-```
-
-* With the collector configured, we are ready to start sending data. Start the receptor.
-
-```
-sudo ./start_receptor
-```
-
-Congratulations! Now that you you can access your server by going to [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser. If you did it right and the collector is feeding the server, you should see the aircrafts that get close to your receptor.
-Don't worry if it doesn't show anything, as you just started feeding. The aircrafts will appear as they come close to your receptor's range. Remember that not every airplane have an ASD-B transceiver that you need to get data.
-
-<!--
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
+```bash
+cat > config.py << 'EOF'
+SERVER_HOST = "IP_DO_SERVIDOR:8000"
+LOGIN = "seu_usuario"
+PASSWORD = "sua_senha"
+COLLECTOR_ID = "seu-collector-id"
+DATABASE_DIR = "data"
+LOG_DIR = "log"
+COLLECTOR_ADDRESS = '/dev/ttyACM0'
+MAX_MESSAGE_AGE = 60 * 1000
+DATA_OUTPUT_ENABLED = False
+DATA_OUTPUT_HOST = "127.0.0.1"
+DATA_OUTPUT_PORT = 30003
+LOCAL_DATA_ENABLED = False
+EOF
 ```
 
-### And coding style tests
+> ⚠️ O Collector ID é gerado no servidor com o comando:
+> ```bash
+> sudo docker exec -it radar_livre python manage.py createcollector <usuario> <lat> <lon>
+> ```
 
-Explain what these tests test and why
+---
 
-```
-Give an example
-```
--->
+## ▶️ Executar
 
-## Deployment
+### 1. Iniciar o dump1090 (captura de sinais do RTL-SDR)
 
-Once you have set up your collector, you can starting sending data by following these steps:
-
-* Run the server (described at the server's README Deployment section).
-
-* Open the terminal by typing CTRL+ALT+T.
-
-* Enter the RadarLivre collector directory
-
-```
-cd RadarLivreCollector
+```bash
+sudo nohup dump1090-mutability --net --quiet > /dev/null 2>&1 &
 ```
 
-* Start the receptor.
+### 2. Iniciar o Collector
 
+```bash
+sudo nohup python3 startReceptor.py > /tmp/collector.log 2>&1 &
 ```
-sudo ./start_receptor
+
+### 3. Monitorar logs
+
+```bash
+tail -f /tmp/collector.log
 ```
 
-Then, your server is going to show any ADS-B transceiver equipped aircraft that gets within range.
+Saída esperada:
+```
+INFO:receptor:Starting receptor...
+INFO:receptor:Receptor open: opened!
+DEBUG:urllib3... "PUT /api/collector/...
+```
 
-* You can stop sending data to the server by pressing CTRL+C(in the terminal).
+---
 
-<!--
-## Built With
+## 🔄 Reiniciar após Reboot
 
-* [Python](https://www.python.org/)
-* [Django](https://www.python.org/)
-* [Markdown](https://daringfireball.net/projects/markdown/)
-* [Pillow](https://python-pillow.org/)
-* [SQLite](https://www.sqlite.org/)
-* [Virtualenv](https://virtualenv.pypa.io/en/stable/)
+```bash
+sudo nohup dump1090-mutability --net --quiet > /dev/null 2>&1 &
+sudo nohup python3 ~/RadarLivreCollector/startReceptor.py > /tmp/collector.log 2>&1 &
+```
 
-## Versioning
+---
 
-We use [SemanticVersioning](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/FelipePinhoUFC/RadarLivre/tags).
+## ✅ Verificação
 
-## Changelog
+| Componente | Comando |
+|------------|---------|
+| RTL-SDR detectado | `lsusb \| grep -i realtek` |
+| dump1090 rodando | `ps aux \| grep dump1090` |
+| Porta 30002 aberta | `ss -tlnp \| grep 30002` |
+| Logs do collector | `tail /tmp/collector.log` |
 
-You can refer to [CHANGELOG.md](https://github.com/FelipePinhoUFC/RadarLivre/blob/master/CHANGELOG.md) for details about the development and differences between versions.
--->
+---
 
-<!-- Old readme
-# Coleta de mensagens ADS-B
+## 🛠️ Problemas Comuns
 
-O aparelho coletor de mensagens ADS-B é um componente simples, que pode ser instalado e configurado facilmente. É composto por uma antena pequena e um receptor que pode ser conectado a uma porta USB de qualquer computador. Para o tratamento das mensagens recebidas é necessário um software específico. As aplicações disponíveis atualmente para o reconhecimento das mensagens ADS-B são em sua maioria privadas e para o sistema operacional Windows, o que gera uma dependência da plataforma e um alto custo de instalação. O sistema Radar livre conta com seu próprio software de coleta, uma aplicação de código fonte aberto implementada sobre a plataforma linux pela equipe do projeto na UFC. A aplicação interpreta as mensagens e extrai informações como identificação, posicionamento, velocidade e altitude, armazenando-os em um banco de dados local. Posteriormente, os dados são enviados a um servidor web.
-_-->
+### RTL-SDR ocupado (`Device or resource busy`)
+
+```bash
+sudo pkill -9 dump1090-mutability
+sleep 3
+sudo nohup dump1090-mutability --net --quiet > /dev/null 2>&1 &
+```
+
+### Processo suspenso (estado `T`)
+
+```bash
+ps aux | grep dump1090   # anotar o PID
+sudo kill -9 <PID>
+sleep 3
+sudo nohup dump1090-mutability --net --quiet > /dev/null 2>&1 &
+```
+
+### Collector não conecta ao servidor
+
+Verifique o `config.py`:
+```bash
+cat config.py
+```
+Confirme que `SERVER_HOST` aponta para o IP correto do servidor.
+
+---
+elivelton Moura
+
+## 🔗 Repositório do Servidor
+
+https://github.com/RadarLivre/RadarLivre
