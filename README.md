@@ -10,7 +10,7 @@
 |------|-------|
 | Dispositivo | Banana Pi M4 Berry — Armbian 24.8.2 Jammy (ARM64) |
 | Receptor ADS-B | RTL2838UHIDIR (Realtek R820T) |
-| Localização | Baturité, CE (-4.3281, -38.8853) |
+
 
 ---
 
