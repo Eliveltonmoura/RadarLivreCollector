@@ -2,8 +2,7 @@
 import atexit
 import subprocess
 import time
-import sys
-import os
+import receptor
 
 print("************************************************************")
 print("| Iniciando RadarLivre Collector                           |")
@@ -21,28 +20,19 @@ dump1090 = subprocess.Popen(
     stdout=subprocess.DEVNULL,
     stderr=subprocess.DEVNULL
 )
-time.sleep(3)
+time.sleep(4)
+print("      dump1090 iniciado!")
 
-# Verificar se dump1090 subiu
-result = subprocess.call(["pgrep", "-x", "dump1090-mutab"], stdout=subprocess.DEVNULL)
-if result != 0:
-    print("      ERRO: dump1090 nao iniciou. Verifique o RTL-SDR.")
-    sys.exit(1)
-else:
-    print("      dump1090 OK (RTL-SDR ativo)")
-
-# Parar dump1090 ao encerrar
+# Parar dump1090 ao encerrar com Ctrl+C
 @atexit.register
 def exitHandler():
     print("\nEncerrando...")
     dump1090.terminate()
     receptor.stop()
 
-# Iniciar collector
+# Iniciar collector com logs no terminal
 print("[3/3] Iniciando Collector...")
 print("************************************************************")
 print("| Logs em tempo real - pressione Ctrl+C para parar        |")
 print("************************************************************")
-
-import receptor
 receptor.start()
